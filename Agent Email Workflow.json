@@ -1,0 +1,601 @@
+{
+  "name": "Agent Email Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -544,
+        256
+      ],
+      "id": "b45d6a91-b6d9-45b5-a5a8-88ffba156bea",
+      "name": "Watching inbox 👁️",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YGPiI6NDi9TueoJO",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "messageId": "={{ $json.id }}",
+        "simple": false,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -320,
+        256
+      ],
+      "id": "3e24271e-5e00-461b-a678-812ab0efdf89",
+      "name": "Getting detalis ⚡",
+      "webhookId": "a315c119-722c-4234-9bab-b523856a4361",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YGPiI6NDi9TueoJO",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=To:\n{{ $json. to. value[0].address }}\n\nSubject Line:\n{{ $json. subject }}\n\nEmail Body:\n{{ $json. text }}\n\nEmail Sent on:\n{{ $json.date }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are a personal emailing assistant that categorizes and responds to emails based on availability from a calendar tool and also a goals database to ensure the emails are being properly responded to and categorized.\n\nHere are the tools you have access to:\n\n- search_events: This is used to search for Google Calendar events for the user and to check availability. This must be checked before drafting responses regarding events,meetings, calls, etc.\n\nToday's date is: {{ $now }}\n\nWhen searching events use today's date and the date of when the email was sent to find calendar availability baed on those factors.\n\n- goals_database:This is used to search an airtable database to see and find the user's goals. This should be checked to ensure the email responses you will be drafting are in line with the user. This must be checked before drafting ANY emails no matter what to see if it truly aligns with what the user wants.\n\nYour Jobs:\n\n1.) Respond to the email always using the goals_database tool to ensure it aligns with the user. When responding to emails that require time availability, always check the calendar. Make these emails short, snappy and down to earth. Add one fitting emoji per email.\n\n2.) Next, you must categorize which type of email this is by adding one of the following labels to each response:\n\nLabel 1: 'Spam'\n- Anything that seems spammy, sketchy or unnecessary based on my goals.\n\nLabel 2: 'Sponsorships'\n- Anything regarding sponsor deals.\n\nLabel 3: 'Promos'\n- Any promotional information that is about products or services\n\nLabel 4: 'Meeting'\n- Anything that requires me to be on a call, show up to an event, etc.\n\nLabel 5: 'Check Later'\n- Anything that falls outside the other 4 label categories.\n\nYou must respond in JSON object format.\n\nHere is the structure that you need to cateogrize each part of your reponse in:\n\n{\n\"label\": \"label here\",\n\"response\": \"response here\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        32,
+        256
+      ],
+      "id": "5c52ba3c-e0cc-43e5-85ae-6fda47fe5545",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Searches events in Google Calendar.",
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "aseelmhd3066@gmail.com",
+          "mode": "list",
+          "cachedResultName": "aseelmhd3066@gmail.com"
+        },
+        "timeMin": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('After', ``, 'string') }}",
+        "timeMax": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Before', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        32,
+        480
+      ],
+      "id": "b685f5c3-deb0-4868-84f1-675c14c79b77",
+      "name": "search_events ",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "cogFOjXd17qlap2A",
+          "name": "Google Calendar OAuth266API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Gets goals from Airtable database by searching records.",
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "app4zo87VbTMaKb2X",
+          "mode": "list",
+          "cachedResultName": "Goals  Workspace",
+          "cachedResultUrl": "https://airtable.com/app4zo87VbTMaKb2X"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl6OubjzNe74FADY",
+          "mode": "list",
+          "cachedResultName": "Goals",
+          "cachedResultUrl": "https://airtable.com/app4zo87VbTMaKb2X/tbl6OubjzNe74FADY"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtableTool",
+      "typeVersion": 2.2,
+      "position": [
+        160,
+        480
+      ],
+      "id": "53b6a6de-f582-43db-ad2f-470b41d64334",
+      "name": "Goals_database",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "UGjK4jMQ2PJUHErw",
+          "name": "Airtable Goals"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\"label\": \"Promos\",\n\"response\": \"response\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        288,
+        480
+      ],
+      "id": "ea048b16-2025-44d1-a00a-0619c6477e60",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "Test",
+        "message": "={{ $json.output.response }}",
+        "options": {
+          "threadId": "={{ $('Getting detalis ⚡').item.json.threadId }}",
+          "sendTo": "={{ $('Getting detalis ⚡').item.json.from.value[0].address }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        496,
+        256
+      ],
+      "id": "994f4196-6273-4d53-9a88-b02f9b0fdd20",
+      "name": "Create a draft📃",
+      "webhookId": "00bb892e-b077-48e6-9a5c-1fbc525d9f3c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YGPiI6NDi9TueoJO",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('AI Agent').item.json.output.label }}",
+                    "rightValue": "Spam",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "52cbfd3c-a3cd-49a7-98cc-b48ea6fc980b"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Spam"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "63137e6d-bd9f-45f6-81da-95239a0f49e5",
+                    "leftValue": "={{ $('AI Agent').item.json.output.label }}",
+                    "rightValue": "Promos",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Promos"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "26fffa15-1273-418d-b204-589196403090",
+                    "leftValue": "={{ $('AI Agent').item.json.output.label }}",
+                    "rightValue": "Check Later",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Check Later"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "968d434b-5f4b-44ce-8c81-96424d063e16",
+                    "leftValue": "={{ $('AI Agent').item.json.output.label }}",
+                    "rightValue": "Sponsorshipsa",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Sponsorshipsa"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "f854a45e-5552-4372-9ad6-ed673da3becc",
+                    "leftValue": "={{ $('AI Agent').item.json.output.label }}",
+                    "rightValue": "Meeting",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Meeting"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        720,
+        208
+      ],
+      "id": "35f163af-597c-45c1-97fb-81d22d6c5bdb",
+      "name": "Labeler"
+    },
+    {
+      "parameters": {
+        "resource": "thread",
+        "operation": "addLabels",
+        "threadId": "={{ $('Create a draft📃').item.json.message.threadId }}",
+        "labelIds": [
+          "SPAM"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        944,
+        -128
+      ],
+      "id": "6a1a2c06-7375-4f1c-a4c5-a2ec449e1684",
+      "name": "SPAM",
+      "webhookId": "7acb7a2f-cc97-4ca8-9137-485ae8835979",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YGPiI6NDi9TueoJO",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "thread",
+        "operation": "addLabels",
+        "threadId": "={{ $('Create a draft📃').item.json.message.threadId }}",
+        "labelIds": [
+          "Label_6073131460025196091"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        944,
+        256
+      ],
+      "id": "3d467909-2b57-4fca-8d2e-b5c9fff3a1ec",
+      "name": "Check Later",
+      "webhookId": "7acb7a2f-cc97-4ca8-9137-485ae8835979",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YGPiI6NDi9TueoJO",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "thread",
+        "operation": "addLabels",
+        "threadId": "={{ $('Create a draft📃').item.json.message.threadId }}",
+        "labelIds": [
+          "Label_4683936029547530560"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        944,
+        448
+      ],
+      "id": "8c077a70-186a-4d2a-92a7-34a2e15275d2",
+      "name": "Sponsorship",
+      "webhookId": "7acb7a2f-cc97-4ca8-9137-485ae8835979",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YGPiI6NDi9TueoJO",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "thread",
+        "operation": "addLabels",
+        "threadId": "={{ $('Create a draft📃').item.json.message.threadId }}",
+        "labelIds": [
+          "CATEGORY_PROMOTIONS"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        944,
+        64
+      ],
+      "id": "6bb8276c-f06e-4e00-aee8-ab3f8b556e93",
+      "name": "Promos",
+      "webhookId": "7acb7a2f-cc97-4ca8-9137-485ae8835979",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YGPiI6NDi9TueoJO",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "thread",
+        "operation": "addLabels",
+        "threadId": "={{ $('Create a draft📃').item.json.message.threadId }}",
+        "labelIds": [
+          "Label_491062530072073160"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        944,
+        640
+      ],
+      "id": "60cb31a4-d9ff-444c-8b46-69402cc364d2",
+      "name": "Meeting",
+      "webhookId": "7acb7a2f-cc97-4ca8-9137-485ae8835979",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YGPiI6NDi9TueoJO",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        480
+      ],
+      "id": "ceacad64-42a1-46dc-981f-45aa5dd972a5",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "ODkH7Y6imzHafH32",
+          "name": "Groq account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Watching inbox 👁️": {
+      "main": [
+        [
+          {
+            "node": "Getting detalis ⚡",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Getting detalis ⚡": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "search_events ": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Goals_database": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Create a draft📃",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a draft📃": {
+      "main": [
+        [
+          {
+            "node": "Labeler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Labeler": {
+      "main": [
+        [
+          {
+            "node": "SPAM",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Promos",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check Later",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sponsorship",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Meeting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "81e997cc-d04e-4d45-93d8-49db40ca3980",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c3748680df3be586800a9d29cedcd44c26bea11d10364664198124316dab8817"
+  },
+  "id": "siR3InMqs2tcYXrK",
+  "tags": []
+}
