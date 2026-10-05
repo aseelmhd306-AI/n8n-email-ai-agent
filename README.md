@@ -64,3 +64,4 @@ This project demonstrates how AI can automate email management, save time, and i
 
 ## 👩‍💻 Author
 Built with ❤️ using n8n
+<img width="1432" height="812" alt="preview (1)" src="https://github.com/user-attachments/assets/4bc49d7c-3b03-48aa-8181-cfad47b3e467" />
